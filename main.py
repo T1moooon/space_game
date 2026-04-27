@@ -24,22 +24,22 @@ def draw(canvas):
 
     coroutine = blink(canvas, 5, 20)
 
-    coroutine.send(None)
-    canvas.refresh()
-    time.sleep(2)
+    while True:
+        coroutine.send(None)
+        canvas.refresh()
+        time.sleep(1)
 
-    coroutine.send(None)
-    canvas.refresh()
-    time.sleep(0.3)
+        coroutine.send(None)
+        canvas.refresh()
+        time.sleep(1)
 
-    coroutine.send(None)
-    canvas.refresh()
-    time.sleep(0.5)
+        coroutine.send(None)
+        canvas.refresh()
+        time.sleep(1)
 
-    coroutine.send(None)
-    canvas.refresh()
-    time.sleep(0.3)
-    time.sleep(3)
+        coroutine.send(None)
+        canvas.refresh()
+        time.sleep(1)
 
 
 if __name__ == "__main__":
