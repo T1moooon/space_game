@@ -3,7 +3,7 @@ import curses
 import random
 import time
 
-from cursed_tools import draw_frame, get_frame_size
+from cursed_tools import draw_frame, get_frame_size, read_controls
 
 
 TIC_TIMEOUT = 0.1
@@ -60,6 +60,10 @@ async def blink(canvas, row, column, symbol="*"):
 
 async def animate_rocket(canvas, row, column, frame_1, frame_2):
     while True:
+        rows_dir, cols_dir, _ = read_controls(canvas)
+        row += rows_dir
+        column += cols_dir
+
         draw_frame(canvas, row, column, frame_1)
         await asyncio.sleep(0)
         draw_frame(canvas, row, column, frame_1, negative=True)
@@ -72,6 +76,7 @@ async def animate_rocket(canvas, row, column, frame_1, frame_2):
 def draw(canvas):
     curses.curs_set(0)
     canvas.border()
+    canvas.nodelay(True)
 
     with open("animation/rocket_frame_1.txt") as f:
         rocket_frame_1 = f.read()
