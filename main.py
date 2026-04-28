@@ -41,7 +41,8 @@ def draw(canvas):
 
     while True:
         for corotine in coroutines:
-            corotine.send(None)
+            for _ in range(random.randint(0, 30)):
+                corotine.send(None)
         canvas.refresh()
         time.sleep(TIC_TIMEOUT)
 
