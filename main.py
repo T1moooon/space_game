@@ -7,6 +7,7 @@ from cursed_tools import draw_frame, get_frame_size, read_controls
 
 
 TIC_TIMEOUT = 0.1
+ROCKET_SPEED = 1
 
 
 async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0):
@@ -59,10 +60,13 @@ async def blink(canvas, row, column, symbol="*"):
 
 
 async def animate_rocket(canvas, row, column, frame_1, frame_2):
+    height, width = canvas.getmaxyx()
+    frame_rows, frame_cols = get_frame_size(frame_1)
+
     while True:
         rows_dir, cols_dir, _ = read_controls(canvas)
-        row += rows_dir
-        column += cols_dir
+        row = max(1, min(row + rows_dir * ROCKET_SPEED, height - frame_rows - 1))
+        column = max(1, min(column + cols_dir * ROCKET_SPEED, width - frame_cols - 1))
 
         draw_frame(canvas, row, column, frame_1)
         await asyncio.sleep(0)
@@ -94,12 +98,13 @@ def draw(canvas):
     ]
 
     coroutines = [blink(canvas, row, col, random.choice("+*.:")) for row, col in coords]
-    coroutines.append(fire(canvas, height - 2, width // 2))
-    coroutines.append(animate_rocket(canvas, row, col, rocket_frame_1, rocket_frame_2))
 
     for coro in coroutines:
         for _ in range(random.randint(0, 30)):
             coro.send(None)
+
+    coroutines.append(fire(canvas, height - 2, width // 2))
+    coroutines.append(animate_rocket(canvas, row, col, rocket_frame_1, rocket_frame_2))
 
     while True:
         for coroutine in coroutines[:]:
