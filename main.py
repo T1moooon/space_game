@@ -22,24 +22,14 @@ def draw(canvas):
     curses.curs_set(0)
     canvas.border()
 
-    coroutine = blink(canvas, 5, 20)
+    coords = [(5, 10), (5, 15), (5, 20), (5, 25), (5, 30)]
+    coroutines = [blink(canvas, row, col) for row, col in coords]
 
     while True:
-        coroutine.send(None)
+        for corotine in coroutines:
+            corotine.send(None)
         canvas.refresh()
-        time.sleep(1)
-
-        coroutine.send(None)
-        canvas.refresh()
-        time.sleep(1)
-
-        coroutine.send(None)
-        canvas.refresh()
-        time.sleep(1)
-
-        coroutine.send(None)
-        canvas.refresh()
-        time.sleep(1)
+        time.sleep(0.5)
 
 
 if __name__ == "__main__":
