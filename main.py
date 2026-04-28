@@ -1,5 +1,6 @@
 import asyncio
 import curses
+import random
 import time
 
 
@@ -29,8 +30,14 @@ def draw(canvas):
     curses.curs_set(0)
     canvas.border()
 
-    coords = [(5, 10), (5, 15), (5, 20), (5, 25), (5, 30)]
-    coroutines = [blink(canvas, row, col) for row, col in coords]
+    height, width = canvas.getmaxyx()
+
+    coords = [
+        (random.randint(1, height - 2), random.randint(1, width - 2))
+        for _ in range(100)
+    ]
+
+    coroutines = [blink(canvas, row, col, random.choice("+*.:")) for row, col in coords]
 
     while True:
         for corotine in coroutines:
