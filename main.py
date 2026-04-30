@@ -8,6 +8,8 @@ from cursed_tools import draw_frame, get_frame_size, read_controls
 
 TIC_TIMEOUT = 0.1
 ROCKET_SPEED = 1
+STARS_COUNT = 100
+BORDER_PADDING = 1
 
 
 async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0):
@@ -95,8 +97,11 @@ def draw(canvas):
     col = width // 2 - frame_columns // 2
 
     coords = [
-        (random.randint(1, height - 2), random.randint(1, width - 2))
-        for _ in range(100)
+        (
+            random.randint(BORDER_PADDING, height - BORDER_PADDING - 1),
+            random.randint(BORDER_PADDING, width - BORDER_PADDING - 1),
+        )
+        for _ in range(STARS_COUNT)
     ]
 
     coroutines = [blink(canvas, row, col, random.choice("+*.:")) for row, col in coords]
