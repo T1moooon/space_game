@@ -64,17 +64,19 @@ async def animate_rocket(canvas, row, column, frame_1, frame_2):
     frame_rows, frame_cols = get_frame_size(frame_1)
 
     while True:
-        rows_dir, cols_dir, _ = read_controls(canvas)
-        row = max(1, min(row + rows_dir * ROCKET_SPEED, height - frame_rows - 1))
-        column = max(1, min(column + cols_dir * ROCKET_SPEED, width - frame_cols - 1))
+        for frame in (frame_1, frame_2):
+            for _ in range(2):
+                rows_dir, cols_dir, _ = read_controls(canvas)
+                row = max(
+                    1, min(row + rows_dir * ROCKET_SPEED, height - frame_rows - 1)
+                )
+                column = max(
+                    1, min(column + cols_dir * ROCKET_SPEED, width - frame_cols - 1)
+                )
 
-        draw_frame(canvas, row, column, frame_1)
-        await asyncio.sleep(0)
-        draw_frame(canvas, row, column, frame_1, negative=True)
-
-        draw_frame(canvas, row, column, frame_2)
-        await asyncio.sleep(0)
-        draw_frame(canvas, row, column, frame_2, negative=True)
+                draw_frame(canvas, row, column, frame)
+                await asyncio.sleep(0)
+                draw_frame(canvas, row, column, frame, negative=True)
 
 
 def draw(canvas):
