@@ -10,6 +10,20 @@ TIC_TIMEOUT = 0.1
 ROCKET_SPEED = 1
 STARS_COUNT = 100
 BORDER_PADDING = 1
+coroutines = []
+
+
+async def fill_orbit_with_garbage(canvas, garbage_frames):
+    """Continuously spawn falling garbage at random columns."""
+    rows, columns = canvas.getmaxyx()
+
+    while True:
+        frame = random.choice(garbage_frames)
+        column = random.randint(BORDER_PADDING, columns - BORDER_PADDING - 1)
+        coroutines.append(fly_garbage(canvas, column, frame))
+
+        for _ in range(20):
+            await asyncio.sleep(0)
 
 
 async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
@@ -112,13 +126,8 @@ def draw(canvas):
         trash_large = f.read()
     with open("animation/trash_xl.txt") as f:
         trash_xl = f.read()
-    with open("animation/duck.txt") as f:
-        duck = f.read()
-    with open("animation/hubble.txt") as f:
-        hubble = f.read()
-    with open("animation/lamp.txt") as f:
-        lamp = f.read()
 
+    garbage_frames = [trash_small, trash_large, trash_xl]
     height, width = canvas.getmaxyx()
     frame_rows, frame_columns = get_frame_size(rocket_frame_1)
     row = height // 2 - frame_rows // 2
@@ -132,7 +141,8 @@ def draw(canvas):
         for _ in range(STARS_COUNT)
     ]
 
-    coroutines = [blink(canvas, row, col, random.choice("+*.:")) for row, col in coords]
+    for star_row, star_col in coords:
+        coroutines.append(blink(canvas, star_row, star_col, random.choice("+*.:")))
 
     for coro in coroutines:
         for _ in range(random.randint(0, 30)):
@@ -140,12 +150,7 @@ def draw(canvas):
 
     coroutines.append(fire(canvas, height - 2, width // 2))
     coroutines.append(animate_rocket(canvas, row, col, rocket_frame_1, rocket_frame_2))
-    coroutines.append(fly_garbage(canvas, width // 4, trash_small))
-    coroutines.append(fly_garbage(canvas, width // 2, trash_large))
-    coroutines.append(fly_garbage(canvas, width * 3 // 4, trash_xl))
-    coroutines.append(fly_garbage(canvas, 1, duck))
-    coroutines.append(fly_garbage(canvas, 2, hubble))
-    coroutines.append(fly_garbage(canvas, 4, lamp))
+    coroutines.append(fill_orbit_with_garbage(canvas, garbage_frames))
 
     while True:
         for coroutine in coroutines[:]:
