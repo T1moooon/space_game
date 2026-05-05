@@ -12,6 +12,22 @@ STARS_COUNT = 100
 BORDER_PADDING = 1
 
 
+async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
+    """Animate garbage, flying from top to bottom. Сolumn position will stay same, as specified on start."""
+    rows_number, columns_number = canvas.getmaxyx()
+
+    column = max(column, 0)
+    column = min(column, columns_number - 1)
+
+    row = 0
+
+    while row < rows_number:
+        draw_frame(canvas, row, column, garbage_frame)
+        await asyncio.sleep(0)
+        draw_frame(canvas, row, column, garbage_frame, negative=True)
+        row += speed
+
+
 async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0):
     """Display animation of gun shot, direction and speed can be specified."""
 
@@ -90,6 +106,18 @@ def draw(canvas):
         rocket_frame_1 = f.read()
     with open("animation/rocket_frame_2.txt") as f:
         rocket_frame_2 = f.read()
+    with open("animation/trash_small.txt") as f:
+        trash_small = f.read()
+    with open("animation/trash_large.txt") as f:
+        trash_large = f.read()
+    with open("animation/trash_xl.txt") as f:
+        trash_xl = f.read()
+    with open("animation/duck.txt") as f:
+        duck = f.read()
+    with open("animation/hubble.txt") as f:
+        hubble = f.read()
+    with open("animation/lamp.txt") as f:
+        lamp = f.read()
 
     height, width = canvas.getmaxyx()
     frame_rows, frame_columns = get_frame_size(rocket_frame_1)
@@ -112,6 +140,12 @@ def draw(canvas):
 
     coroutines.append(fire(canvas, height - 2, width // 2))
     coroutines.append(animate_rocket(canvas, row, col, rocket_frame_1, rocket_frame_2))
+    coroutines.append(fly_garbage(canvas, width // 4, trash_small))
+    coroutines.append(fly_garbage(canvas, width // 2, trash_large))
+    coroutines.append(fly_garbage(canvas, width * 3 // 4, trash_xl))
+    coroutines.append(fly_garbage(canvas, 1, duck))
+    coroutines.append(fly_garbage(canvas, 2, hubble))
+    coroutines.append(fly_garbage(canvas, 4, lamp))
 
     while True:
         for coroutine in coroutines[:]:
