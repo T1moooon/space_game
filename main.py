@@ -13,6 +13,11 @@ BORDER_PADDING = 1
 coroutines = []
 
 
+async def sleep(tics=1):
+    for _ in range(tics):
+        await asyncio.sleep(0)
+
+
 async def fill_orbit_with_garbage(canvas, garbage_frames):
     """Continuously spawn falling garbage at random columns."""
     rows, columns = canvas.getmaxyx()
@@ -22,8 +27,7 @@ async def fill_orbit_with_garbage(canvas, garbage_frames):
         column = random.randint(BORDER_PADDING, columns - BORDER_PADDING - 1)
         coroutines.append(fly_garbage(canvas, column, frame))
 
-        for _ in range(20):
-            await asyncio.sleep(0)
+        await sleep(20)
 
 
 async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
@@ -75,20 +79,16 @@ async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0
 async def blink(canvas, row, column, symbol="*"):
     while True:
         canvas.addstr(row, column, symbol, curses.A_DIM)
-        for _ in range(20):
-            await asyncio.sleep(0)
+        await sleep(20)
 
         canvas.addstr(row, column, symbol)
-        for _ in range(3):
-            await asyncio.sleep(0)
+        await sleep(3)
 
         canvas.addstr(row, column, symbol, curses.A_BOLD)
-        for _ in range(5):
-            await asyncio.sleep(0)
+        await sleep(5)
 
         canvas.addstr(row, column, symbol)
-        for _ in range(3):
-            await asyncio.sleep(0)
+        await sleep(3)
 
 
 async def animate_rocket(canvas, row, column, frame_1, frame_2):
