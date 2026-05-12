@@ -4,6 +4,7 @@ import random
 import time
 
 from cursed_tools import draw_frame, get_frame_size, read_controls
+from physics import update_speed
 
 
 TIC_TIMEOUT = 0.1
@@ -95,16 +96,22 @@ async def animate_rocket(canvas, row, column, frame_1, frame_2):
     height, width = canvas.getmaxyx()
     frame_rows, frame_cols = get_frame_size(frame_1)
 
+    rows_speed, columns_speed = 0, 0
+
     while True:
         for frame in (frame_1, frame_2):
             for _ in range(2):
                 rows_dir, cols_dir, _ = read_controls(canvas)
-                row = max(
-                    1, min(row + rows_dir * ROCKET_SPEED, height - frame_rows - 1)
+                rows_speed, columns_speed = update_speed(
+                    rows_speed,
+                    columns_speed,
+                    rows_dir,
+                    cols_dir,
+                    row_speed_limit=ROCKET_SPEED,
+                    column_speed_limit=ROCKET_SPEED,
                 )
-                column = max(
-                    1, min(column + cols_dir * ROCKET_SPEED, width - frame_cols - 1)
-                )
+                row = max(1, min(row + rows_speed, height - frame_rows - 1))
+                column = max(1, min(column + columns_speed, width - frame_cols - 1))
 
                 draw_frame(canvas, row, column, frame)
                 await asyncio.sleep(0)
