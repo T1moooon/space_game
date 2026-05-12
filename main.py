@@ -101,7 +101,11 @@ async def animate_rocket(canvas, row, column, frame_1, frame_2):
     while True:
         for frame in (frame_1, frame_2):
             for _ in range(2):
-                rows_dir, cols_dir, _ = read_controls(canvas)
+                rows_dir, cols_dir, space_pressed = read_controls(canvas)
+
+                if space_pressed:
+                    coroutines.append(fire(canvas, row, column + frame_cols // 2))
+
                 rows_speed, columns_speed = update_speed(
                     rows_speed,
                     columns_speed,
@@ -155,7 +159,6 @@ def draw(canvas):
         for _ in range(random.randint(0, 30)):
             coro.send(None)
 
-    coroutines.append(fire(canvas, height - 2, width // 2))
     coroutines.append(animate_rocket(canvas, row, col, rocket_frame_1, rocket_frame_2))
     coroutines.append(fill_orbit_with_garbage(canvas, garbage_frames))
 
