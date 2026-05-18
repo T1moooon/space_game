@@ -16,6 +16,19 @@ BORDER_PADDING = 1
 coroutines = []
 obstacles = []
 obstacles_in_last_collisions = []
+rocket_row = 0
+rocket_column = 0
+
+
+async def show_gameover(canvas, message):
+    rows, columns = canvas.getmaxyx()
+    frame_rows, frame_cols = get_frame_size(message)
+    row = rows // 2 - frame_rows // 2
+    column = columns // 2 - frame_cols // 2
+
+    while True:
+        draw_frame(canvas, row, column, message)
+        await asyncio.sleep(0)
 
 
 async def sleep(tics=1):
@@ -117,34 +130,51 @@ async def blink(canvas, row, column, symbol="*"):
         await sleep(3)
 
 
-async def animate_rocket(canvas, row, column, frame_1, frame_2):
+async def run_spaceship(canvas, frame):
+    global rocket_row, rocket_column
+
     height, width = canvas.getmaxyx()
-    frame_rows, frame_cols = get_frame_size(frame_1)
+    frame_rows, frame_cols = get_frame_size(frame)
 
     rows_speed, columns_speed = 0, 0
 
     while True:
+        rows_dir, cols_dir, space_pressed = read_controls(canvas)
+
+        if space_pressed:
+            coroutines.append(fire(canvas, rocket_row, rocket_column + frame_cols // 2))
+
+        rows_speed, columns_speed = update_speed(
+            rows_speed,
+            columns_speed,
+            rows_dir,
+            cols_dir,
+            row_speed_limit=ROCKET_SPEED,
+            column_speed_limit=ROCKET_SPEED,
+        )
+        rocket_row = max(1, min(rocket_row + rows_speed, height - frame_rows - 1))
+        rocket_column = max(
+            1, min(rocket_column + columns_speed, width - frame_cols - 1)
+        )
+
+        await asyncio.sleep(0)
+
+
+async def animate_rocket(canvas, frame_1, frame_2, gameover_frame):
+    frame_rows, frame_cols = get_frame_size(frame_1)
+
+    while True:
         for frame in (frame_1, frame_2):
             for _ in range(2):
-                rows_dir, cols_dir, space_pressed = read_controls(canvas)
-
-                if space_pressed:
-                    coroutines.append(fire(canvas, row, column + frame_cols // 2))
-
-                rows_speed, columns_speed = update_speed(
-                    rows_speed,
-                    columns_speed,
-                    rows_dir,
-                    cols_dir,
-                    row_speed_limit=ROCKET_SPEED,
-                    column_speed_limit=ROCKET_SPEED,
-                )
-                row = max(1, min(row + rows_speed, height - frame_rows - 1))
-                column = max(1, min(column + columns_speed, width - frame_cols - 1))
-
+                row, column = rocket_row, rocket_column
                 draw_frame(canvas, row, column, frame)
                 await asyncio.sleep(0)
                 draw_frame(canvas, row, column, frame, negative=True)
+
+                for obstacle in obstacles:
+                    if obstacle.has_collision(row, column, frame_rows, frame_cols):
+                        coroutines.append(show_gameover(canvas, gameover_frame))
+                        return
 
 
 def draw(canvas):
@@ -162,12 +192,16 @@ def draw(canvas):
         trash_large = f.read()
     with open("animation/trash_xl.txt") as f:
         trash_xl = f.read()
+    with open("animation/gameover.txt") as f:
+        gameover_frame = f.read()
+
+    global rocket_row, rocket_column
 
     garbage_frames = [trash_small, trash_large, trash_xl]
     height, width = canvas.getmaxyx()
     frame_rows, frame_columns = get_frame_size(rocket_frame_1)
-    row = height // 2 - frame_rows // 2
-    col = width // 2 - frame_columns // 2
+    rocket_row = height // 2 - frame_rows // 2
+    rocket_column = width // 2 - frame_columns // 2
 
     coords = [
         (
@@ -184,7 +218,10 @@ def draw(canvas):
         for _ in range(random.randint(0, 30)):
             coro.send(None)
 
-    coroutines.append(animate_rocket(canvas, row, col, rocket_frame_1, rocket_frame_2))
+    coroutines.append(run_spaceship(canvas, rocket_frame_1))
+    coroutines.append(
+        animate_rocket(canvas, rocket_frame_1, rocket_frame_2, gameover_frame)
+    )
     coroutines.append(fill_orbit_with_garbage(canvas, garbage_frames))
 
     while True:
