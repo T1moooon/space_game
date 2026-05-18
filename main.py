@@ -4,6 +4,7 @@ import random
 import time
 
 from curses_tools import draw_frame, get_frame_size, read_controls
+from explosion import explode
 from obstacles import Obstacle
 from physics import update_speed
 
@@ -92,6 +93,9 @@ async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0
         for obstacle in obstacles:
             if obstacle.has_collision(round(row), round(column)):
                 obstacles_in_last_collisions.append(obstacle)
+                center_row = obstacle.row + obstacle.rows_size // 2
+                center_column = obstacle.column + obstacle.columns_size // 2
+                coroutines.append(explode(canvas, center_row, center_column))
                 return
 
         row += rows_speed
