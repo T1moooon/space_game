@@ -4,6 +4,7 @@ import random
 import time
 
 from cursed_tools import draw_frame, get_frame_size, read_controls
+from obstacles import Obstacle, show_obstacles
 from physics import update_speed
 
 
@@ -12,6 +13,7 @@ ROCKET_SPEED = 1
 STARS_COUNT = 100
 BORDER_PADDING = 1
 coroutines = []
+obstacles = []
 
 
 async def sleep(tics=1):
@@ -34,17 +36,24 @@ async def fill_orbit_with_garbage(canvas, garbage_frames):
 async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
     """Animate garbage, flying from top to bottom. Сolumn position will stay same, as specified on start."""
     rows_number, columns_number = canvas.getmaxyx()
+    frame_rows, frame_columns = get_frame_size(garbage_frame)
 
     column = max(column, 0)
     column = min(column, columns_number - 1)
 
     row = 0
+    obstacle = Obstacle(row, column, frame_rows, frame_columns)
+    obstacles.append(obstacle)
 
-    while row < rows_number:
-        draw_frame(canvas, row, column, garbage_frame)
-        await asyncio.sleep(0)
-        draw_frame(canvas, row, column, garbage_frame, negative=True)
-        row += speed
+    try:
+        while row < rows_number:
+            obstacle.row = row
+            draw_frame(canvas, row, column, garbage_frame)
+            await asyncio.sleep(0)
+            draw_frame(canvas, row, column, garbage_frame, negative=True)
+            row += speed
+    finally:
+        obstacles.remove(obstacle)
 
 
 async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0):
@@ -161,6 +170,7 @@ def draw(canvas):
 
     coroutines.append(animate_rocket(canvas, row, col, rocket_frame_1, rocket_frame_2))
     coroutines.append(fill_orbit_with_garbage(canvas, garbage_frames))
+    coroutines.append(show_obstacles(canvas, obstacles))
 
     while True:
         for coroutine in coroutines[:]:
