@@ -4,7 +4,7 @@ import random
 import time
 
 from cursed_tools import draw_frame, get_frame_size, read_controls
-from obstacles import Obstacle, show_obstacles
+from obstacles import Obstacle
 from physics import update_speed
 
 
@@ -82,6 +82,11 @@ async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0
         canvas.addstr(round(row), round(column), symbol)
         await asyncio.sleep(0)
         canvas.addstr(round(row), round(column), " ")
+
+        for obstacle in obstacles:
+            if obstacle.has_collision(round(row), round(column)):
+                return
+
         row += rows_speed
         column += columns_speed
 
@@ -170,7 +175,6 @@ def draw(canvas):
 
     coroutines.append(animate_rocket(canvas, row, col, rocket_frame_1, rocket_frame_2))
     coroutines.append(fill_orbit_with_garbage(canvas, garbage_frames))
-    coroutines.append(show_obstacles(canvas, obstacles))
 
     while True:
         for coroutine in coroutines[:]:
