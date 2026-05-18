@@ -14,6 +14,7 @@ STARS_COUNT = 100
 BORDER_PADDING = 1
 coroutines = []
 obstacles = []
+obstacles_in_last_collisions = []
 
 
 async def sleep(tics=1):
@@ -51,6 +52,11 @@ async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
             draw_frame(canvas, row, column, garbage_frame)
             await asyncio.sleep(0)
             draw_frame(canvas, row, column, garbage_frame, negative=True)
+
+            if obstacle in obstacles_in_last_collisions:
+                obstacles_in_last_collisions.remove(obstacle)
+                return
+
             row += speed
     finally:
         obstacles.remove(obstacle)
@@ -85,6 +91,7 @@ async def fire(canvas, start_row, start_column, rows_speed=-0.3, columns_speed=0
 
         for obstacle in obstacles:
             if obstacle.has_collision(round(row), round(column)):
+                obstacles_in_last_collisions.append(obstacle)
                 return
 
         row += rows_speed
