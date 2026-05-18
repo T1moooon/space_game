@@ -3,7 +3,7 @@ import curses
 import random
 import time
 
-from cursed_tools import draw_frame, get_frame_size, read_controls
+from curses_tools import draw_frame, get_frame_size, read_controls
 from obstacles import Obstacle
 from physics import update_speed
 

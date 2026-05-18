@@ -1,6 +1,6 @@
 import asyncio
 
-from cursed_tools import draw_frame
+from curses_tools import draw_frame
 
 
 class Obstacle:
