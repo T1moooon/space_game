@@ -13,11 +13,61 @@ TIC_TIMEOUT = 0.1
 ROCKET_SPEED = 1
 STARS_COUNT = 100
 BORDER_PADDING = 1
+TICS_PER_YEAR = 15
+PLASMA_GUN_YEAR = 2020
 coroutines = []
 obstacles = []
 obstacles_in_last_collisions = []
 rocket_row = 0
 rocket_column = 0
+year = 1957
+
+PHRASES = {
+    1957: "First Sputnik",
+    1961: "Gagarin flew!",
+    1969: "Armstrong got on the moon!",
+    1971: "First orbital space station Salute-1",
+    1981: "Flight of the Shuttle Columbia",
+    1998: "ISS start building",
+    2011: "Messenger launch to Mercury",
+    2020: "Take the plasma gun! Shoot the garbage!",
+}
+
+
+def get_garbage_delay_tics(year):
+    if year < 1961:
+        return None
+    elif year < 1969:
+        return 20
+    elif year < 1981:
+        return 14
+    elif year < 1995:
+        return 10
+    elif year < 2010:
+        return 8
+    elif year < 2020:
+        return 6
+    else:
+        return 2
+
+
+async def count_years():
+    global year
+    while True:
+        await sleep(TICS_PER_YEAR)
+        year += 1
+
+
+async def show_year(canvas):
+    rows, columns = canvas.getmaxyx()
+    row = rows - 2
+    phrase = ""
+    while True:
+        phrase = PHRASES.get(year, phrase)
+        message = f"Year: {year}  {phrase}"
+        draw_frame(canvas, row, 1, message)
+        await asyncio.sleep(0)
+        draw_frame(canvas, row, 1, message, negative=True)
 
 
 async def show_gameover(canvas, message):
@@ -41,11 +91,16 @@ async def fill_orbit_with_garbage(canvas, garbage_frames):
     rows, columns = canvas.getmaxyx()
 
     while True:
+        delay = get_garbage_delay_tics(year)
+        if delay is None:
+            await asyncio.sleep(0)
+            continue
+
         frame = random.choice(garbage_frames)
         column = random.randint(BORDER_PADDING, columns - BORDER_PADDING - 1)
         coroutines.append(fly_garbage(canvas, column, frame))
 
-        await sleep(20)
+        await sleep(delay)
 
 
 async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
@@ -54,7 +109,7 @@ async def fly_garbage(canvas, column, garbage_frame, speed=0.5):
     frame_rows, frame_columns = get_frame_size(garbage_frame)
 
     column = max(column, 0)
-    column = min(column, columns_number - 1)
+    column = min(column, columns_number - frame_columns - 1)
 
     row = 0
     obstacle = Obstacle(row, column, frame_rows, frame_columns)
@@ -141,7 +196,7 @@ async def run_spaceship(canvas, frame):
     while True:
         rows_dir, cols_dir, space_pressed = read_controls(canvas)
 
-        if space_pressed:
+        if space_pressed and year >= PLASMA_GUN_YEAR:
             coroutines.append(fire(canvas, rocket_row, rocket_column + frame_cols // 2))
 
         rows_speed, columns_speed = update_speed(
@@ -223,6 +278,9 @@ def draw(canvas):
         animate_rocket(canvas, rocket_frame_1, rocket_frame_2, gameover_frame)
     )
     coroutines.append(fill_orbit_with_garbage(canvas, garbage_frames))
+
+    coroutines.append(count_years())
+    coroutines.append(show_year(canvas))
 
     while True:
         for coroutine in coroutines[:]:
