@@ -1,6 +1,6 @@
-import asyncio
-
-from curses_tools import draw_frame
+# import asyncio
+#
+# from curses_tools import draw_frame
 
 
 class Obstacle:
@@ -42,22 +42,23 @@ def _get_bounding_box_lines(rows, columns):
     yield " " + "-" * columns + " "
 
 
-async def show_obstacles(canvas, obstacles):
-    """Display bounding boxes of every obstacle in a list"""
-
-    while True:
-        boxes = []
-
-        for obstacle in obstacles:
-            boxes.append(obstacle.dump_bounding_box())
-
-        for row, column, frame in boxes:
-            draw_frame(canvas, row, column, frame)
-
-        await asyncio.sleep(0)
-
-        for row, column, frame in boxes:
-            draw_frame(canvas, row, column, frame, negative=True)
+# Отладочный инструмент
+# async def show_obstacles(canvas, obstacles):
+#     """Display bounding boxes of every obstacle in a list"""
+#
+#     while True:
+#         boxes = []
+#
+#         for obstacle in obstacles:
+#             boxes.append(obstacle.dump_bounding_box())
+#
+#         for row, column, frame in boxes:
+#             draw_frame(canvas, row, column, frame)
+#
+#         await asyncio.sleep(0)
+#
+#         for row, column, frame in boxes:
+#             draw_frame(canvas, row, column, frame, negative=True)
 
 
 def _is_point_inside(
